@@ -19,9 +19,10 @@ export class ChatFlatModule extends BaseModule {
 
 export async function rollFlatCheck(
 	dc: number,
-	{ hidden = false, label }: { hidden: boolean; label?: string },
+	{ hidden = false, invisible = false, origin = undefined, label }: { hidden: boolean; invisible?: boolean; origin?: ActorPF2e; label?: string },
 ) {
 	const actor =
+		origin ??
 		canvas.tokens.controlled.at(0)?.actor ??
 		game.user.character ??
 		(new Actor({ type: "npc", name: game.user.name }) as ActorPF2e)
@@ -36,6 +37,7 @@ export async function rollFlatCheck(
 			createMessage: true,
 			skipDialog: true,
 			rollMode: hidden ? "blindroll" : "roll",
+			invisibleMessage: invisible
 		},
 	)
 }

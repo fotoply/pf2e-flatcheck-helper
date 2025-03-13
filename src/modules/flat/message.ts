@@ -3,6 +3,7 @@ import MODULE from "src/index"
 import { BaseModule } from "../base"
 import { flatMessageConfig } from "./message-config"
 import type { ActorPF2e, ChatMessagePF2e, SpellPF2e, TokenPF2e } from "foundry-pf2e"
+import {rollFlatCheck} from "src/modules/flat/flat";
 
 export class MessageFlatCheckModule extends BaseModule {
 	settingsKey = "flat-check-in-message"
@@ -12,9 +13,10 @@ export class MessageFlatCheckModule extends BaseModule {
 		super.enable()
 
 		this.registerHook("preCreateChatMessage", preCreateMessage)
+		this.registerHook("renderChatMessage", onRenderChatMessage)
 		this.registerWrapper("ChatMessage.prototype.getHTML", messageGetHTMLWrapper, "WRAPPER")
-		this.registerSocket("flat-dsn", handleDSNSocket)
 	}
+
 	disable() {
 		super.disable()
 	}
@@ -188,12 +190,11 @@ function renderButtons(msg: ChatMessagePF2e, html: JQuery) {
 }
 
 async function handleFlatButtonClick(msg: ChatMessagePF2e, key: string, dc: number) {
-	const roll = await new Roll("d20").roll()
 	const oldRoll = foundry.utils.getProperty(msg, `flags.${MODULE_ID}.flatchecks.${key}.roll`)
-
 	const updates: Record<string, any> = {}
 
 	if (!oldRoll) {
+		const roll = await rollFlatCheck(dc, { hidden: false, invisible: true, origin: msg?.actor ?? undefined})
 		updates[`flags.${MODULE_ID}.flatchecks.${key}.roll`] = roll.total
 	} else {
 		let heroPoints = 0
@@ -234,6 +235,7 @@ async function handleFlatButtonClick(msg: ChatMessagePF2e, key: string, dc: numb
 					})
 				}
 
+				const roll = await rollFlatCheck(dc, { hidden: false, invisible: true, origin: msg?.actor ?? undefined})
 				updates[`flags.${MODULE_ID}.flatchecks.${key}.roll`] = roll.total
 				updates[`flags.${MODULE_ID}.flatchecks.${key}.reroll`] = { oldRoll, keep: result }
 			},
@@ -241,12 +243,6 @@ async function handleFlatButtonClick(msg: ChatMessagePF2e, key: string, dc: numb
 	}
 
 	if (Object.keys(updates).length > 0) {
-		emitSocket({
-			msgId: msg.id,
-			userId: game.user.id,
-			roll: JSON.stringify(roll.toJSON()),
-		})
-
 		msg.update(updates)
 	}
 }
@@ -269,6 +265,13 @@ function shouldShowFlatChecks(msg: ChatMessagePF2e): boolean {
 	if (!msg.item) return false
 
 	return msg.item.isOfType("action", "consumable", "equipment", "feat", "melee", "weapon")
+}
+
+export function onRenderChatMessage(message: ChatMessagePF2e, html, data) {
+	if(message.flags.pf2e.context?.invisibleMessage ?? false) {
+		// Only show this message if the module is disabled in the future
+		html.addClass("invisible-cause-injected");
+	}
 }
 
 export async function preCreateMessage(msg: ChatMessagePF2e) {
@@ -387,28 +390,4 @@ function flatCheckForTarget(origin: ActorPF2e, target: TokenPF2e) {
 
 	if (originDC < targetDC) return { label: targetCondition!.capitalize(), dc: targetDC }
 	else return { label: originCondition!.capitalize(), dc: originDC }
-}
-
-interface SocketData {
-	msgId: string
-	userId: string
-	roll: string
-}
-
-function emitSocket(data: SocketData) {
-	MODULE.socketHandler.emit("flat-dsn", data)
-}
-
-function handleDSNSocket(data: SocketData) {
-	// @ts-expect-error
-	if (!game.dice3d) return
-
-	const msg = game.messages.get(data.msgId)
-	const user = game.users.get(data.userId)
-	const roll = Roll.fromJSON(data.roll)
-
-	if (!user || !msg) return
-
-	// @ts-expect-error
-	game.dice3d.showForRoll(roll, user, false, null, false, data.msgId)
 }

@@ -213,3 +213,8 @@
 [id="pf2e-flatcheck-helper.flatcheck.reroll"] .dialog-content {
 	gap: 8px;
 }
+
+.invisible-cause-injected {
+	display: none !important;
+}
+
