@@ -3,6 +3,10 @@
 
 ## [Unreleased]
 
+## [0.14.3] - 2025-03-24
+### Fixed
+- Dim light in a darkness region getting ignored
+
 ## [0.14.2] - 2025-03-23
 ### Fixed
 - Token light source are no longer ignored
@@ -26,7 +30,8 @@
 ### Fixed
 - Flat checks showing on damage/healing received messages
 
-[Unreleased]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.2...HEAD
+[Unreleased]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.3...HEAD
+[0.14.3]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.2...v0.14.3
 [0.14.2]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.1...v0.14.2
 [0.14.1]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.13.4...v0.14.0

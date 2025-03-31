@@ -4,6 +4,7 @@ import { BaseModule } from "../base"
 import { flatMessageConfig } from "./message-config"
 import type { ChatMessagePF2e, SpellPF2e } from "foundry-pf2e"
 import { flatCheckForUserTargets } from "./target"
+import { translate } from "src/utils"
 import type { ActorPF2e, ChatMessagePF2e, SpellPF2e, TokenPF2e } from "foundry-pf2e"
 import {rollFlatCheck} from "src/modules/flat/flat";
 
@@ -32,11 +33,11 @@ export class MessageFlatCheckModule extends BaseModule {
 				)
 			) {
 				foundry.applications.api.DialogV2.prompt({
-					window: { title: "PF2e Utility Buttons" },
+					window: { title: translate("flat.message.perception-outdated-title") },
 					content:
-						"pf2e-perception is outdated. Flat check integration requires version 0.40.0 or newer.",
+						translate("flat.message.perception-outdated-content"),
 					ok: {
-						label: "Close",
+						label: translate("flat.message.button-close"),
 						icon: "fas fa-close",
 					},
 				})
@@ -91,7 +92,7 @@ function renderButtons(msg: ChatMessagePF2e, html: JQuery) {
 		if (data.deafened) buttons.push({ key: "deafened", ...data.deafened })
 		if (data.targets) {
 			if ("count" in data.targets)
-				buttons.push({ text: `${data.targets.count} targets require a flat check` })
+				buttons.push({ text: translate("flat.message.button-require-flat-check", { count: data.targets.count }) })
 			else buttons.push({ key: "targets", ...data.targets })
 		}
 	} else {
@@ -107,7 +108,7 @@ function renderButtons(msg: ChatMessagePF2e, html: JQuery) {
 			const buttonIcon = data.roll ? "fa-rotate rotate" : "fa-dice-d20 die"
 			const buttonClass =
 				msg.canUserModify(game.user as unknown as foundry.documents.BaseUser, "update") &&
-				!data.reroll
+					!data.reroll
 					? ""
 					: "hidden"
 
@@ -135,7 +136,7 @@ function renderButtons(msg: ChatMessagePF2e, html: JQuery) {
 				  <span>${data.label}</span>
 					${data.description ? `<span class="fc-description">${data.description}</span>` : ""}
 				</span>
-				<span class="fc-dc">DC ${data.dc}</span>
+				<span class="fc-dc">${translate("flat.message.dc", { value: data.dc })}</span>
 				<span class="fc-roll">
 					<span class="fc-rolls">
 						<span class="${rollClasses[0]}">${rolls[0] ?? ""}</span>
@@ -155,10 +156,10 @@ function renderButtons(msg: ChatMessagePF2e, html: JQuery) {
 
 		if (data.grabbed && data.stupefied) {
 			$(buttonNode).append(`<div class="fc-rule-note">
-					<span data-tooltip='"If more than one flat check would ever cause or prevent the same thing, just roll once and use the highest DC."'><i class="fa-solid fa-circle-info"></i></span>
+					<span data-tooltip='"${translate("flat.message.tooltip-highest-dc")}"'><i class="fa-solid fa-circle-info"></i></span>
 				</div>`)
 		}
-		;(() => {
+		; (() => {
 			let section = html.find("section.card-buttons")
 			if (section.length) {
 				section.append(buttonNode)
@@ -212,16 +213,16 @@ async function handleFlatButtonClick(msg: ChatMessagePF2e, key: string, dc: numb
 			id: `${MODULE_ID}.flatcheck.reroll`,
 			window: { title: "PF2e Utility Buttons" },
 			content: `
-				${heroPoints > 0 ? '<label><input type="radio" name="choice" value="hero" checked> <i class="fa-solid fa-hospital-symbol"></i> Reroll using a hero point</label>' : ""}
-				<label><input type="radio" name="choice" value="new" ${heroPoints <= 0 ? "checked" : ""}> <i class="fa-solid fa-dice"></i> Reroll and keep the new result</label>
-				<label><input type="radio" name="choice" value="low"> <i class="fa-solid fa-dice-one"></i> Reroll and keep the lower result</label>
-				<label><input type="radio" name="choice" value="higher"> <i class="fa-solid fa-dice-six"></i> Reroll and keep the higher result</label>
+				${heroPoints > 0 ? `<label><input type="radio" name="choice" value="hero" checked> <i class="fa-solid fa-hospital-symbol"></i> ${translate("flat.message.reroll-hero-point")}</label>` : ""}
+				<label><input type="radio" name="choice" value="new" ${heroPoints <= 0 ? "checked" : ""}> <i class="fa-solid fa-dice"></i> ${translate("flat.message.reroll-new-result")}</label>
+				<label><input type="radio" name="choice" value="low"> <i class="fa-solid fa-dice-one"></i> ${translate("flat.message.reroll-lower-result")}</label>
+				<label><input type="radio" name="choice" value="higher"> <i class="fa-solid fa-dice-six"></i> ${translate("flat.message.reroll-higher-result")}</label>
 			`,
 			buttons: [
 				{
 					action: "submit",
 					icon: "fa-solid fa-rotate rotate",
-					label: "Reroll",
+					label: translate("flat.message.button-reroll"),
 					default: true,
 					// @ts-expect-error
 					callback: (event, button, dialog) => button.form.elements.choice.value,
@@ -229,7 +230,7 @@ async function handleFlatButtonClick(msg: ChatMessagePF2e, key: string, dc: numb
 				{
 					action: "cancel",
 					icon: "fas fa-times",
-					label: "Cancel",
+					label: translate("flat.message.button-cancel"),
 				},
 			],
 			submit: async (result) => {
@@ -292,7 +293,7 @@ export async function preCreateMessage(msg: ChatMessagePF2e) {
 		msg.actor?.conditions.stored.some((c) => c.slug === "grabbed") &&
 		msg.item?.system.traits.value?.some((t) => t === "manipulate")
 	) {
-		data.grabbed = { label: "Grabbed", dc: 5 }
+		data.grabbed = { label: translate("flat.message.grabbed"), dc: 5 }
 	}
 
 	if (
@@ -300,7 +301,7 @@ export async function preCreateMessage(msg: ChatMessagePF2e) {
 		msg.actor?.conditions.stored.some((c) => c.slug === "deafened") &&
 		msg.item?.system.traits.value?.some((t) => t === "auditory")
 	) {
-		data.deafened = { label: "Deafened", dc: 5 }
+		data.deafened = { label: translate("flat.message.deafened"), dc: 5 }
 	}
 	if (
 		!ignored.has("deafened-spellcasting") &&
@@ -308,13 +309,13 @@ export async function preCreateMessage(msg: ChatMessagePF2e) {
 		msg.flags?.pf2e?.origin?.type === "spell" &&
 		!msg.item?.system.traits.value?.some((t) => t === "subtle")
 	) {
-		data.deafened = { label: "Deafened", dc: 5 }
+		data.deafened = { label: translate("flat.message.deafened"), dc: 5 }
 	}
 
 	if (!ignored.has("stupefied") && msg.flags?.pf2e?.origin?.type === "spell") {
 		const stupefied = msg.actor?.conditions.stupefied?.value
 		if (stupefied) {
-			data.stupefied = { label: `Stupefied ${stupefied}`, dc: 5 + stupefied }
+			data.stupefied = { label: translate("flat.message.stupefied", { value: stupefied }), dc: 5 + stupefied }
 		}
 	}
 
