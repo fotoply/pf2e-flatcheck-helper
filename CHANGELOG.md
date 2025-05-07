@@ -3,6 +3,21 @@
 
 ## [Unreleased]
 
+## [0.15.0] - 2025-05-02
+### Added
+- **Documentation!** The module settings now include a button to open a detailed explanation of everything in this module.
+
+### Changed
+- Switched the "Flat Checks in Messages" setting from client to world
+- Show Light Visualization above tiles
+
+## [0.14.5] - 2025-04-19
+### Changed
+- Alternative Roll Breakdowns: Show GMs which modifiers players can see
+
+### Fixed
+- Missing translation entries
+
 ## [0.14.4] - 2025-04-08
 ### Added
 - Full localization support by @Cuingamehtar
@@ -35,7 +50,9 @@
 ### Fixed
 - Flat checks showing on damage/healing received messages
 
-[Unreleased]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.4...HEAD
+[Unreleased]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.5...v0.15.0
+[0.14.5]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.4...v0.14.5
 [0.14.4]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.3...v0.14.4
 [0.14.3]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.2...v0.14.3
 [0.14.2]: https://github.com/oWave/pf2e-flatcheck-helper/compare/v0.14.1...v0.14.2
